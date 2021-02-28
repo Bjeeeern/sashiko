@@ -1,0 +1,39 @@
+body {
+  margin: 0;
+  padding: 0;
+
+  display: flex;
+  flex-direction: row;
+}
+
+canvas {
+  margin: 0px;
+  position: fixed;
+  z-index: -1000;
+}
+
+.fake {
+  width: 450px;
+  height: 450px;
+}
+
+#info {
+  background-color: white;
+  margin: auto;
+  border-style: dotted;
+  border-color: black;
+  border-width: 5px;
+
+  padding: 20px;
+}
+/* Chrome, Safari, Edge, Opera */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+input[type="number"] {
+  -moz-appearance: textfield;
+}

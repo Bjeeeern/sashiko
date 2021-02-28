@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sashiko pattern tester</title>
+
+    <link rel="stylesheet" href="style.css">
+    <script type="module" src="main.js"></script>
+</head>
+<body>
+    <canvas></canvas>
+    <div class="fake"></div>
+    <div id="info">
+        <p>Rader börjar uppifrån och ner, kolumner vänster till höger</p>
+        <form>
+            <label for="xPattern">Mönster för liggande stygn</label>
+            <input type="number" name="xPatternInput" id="xPattern">
+            <br>
+            <label for="yPattern">Mönster för stående stygn</label>
+            <input type="number" name="yPatternInput" id="yPattern" disabled="true">
+            <br>
+            <label for="repeatPattern">Stående är liggande mönster roterat 90&deg; moturs</label>
+            <input type="checkbox" name="repeatPatternCheckBox" id="repeatPattern" checked="true">
+        </form>
+    </div>
+</body>
+</html>
