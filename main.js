@@ -1,67 +1,51 @@
+import {assert} from "./util.js"
+
+function v2(x,y) { return {x:x, y:y}; }
+
+const pattern = [[0],[0]];
+
 const form = document.querySelector("form");
+const fake = document.querySelector(".fake");
 
-let previousXPattern = "";
-form.xPatternInput.addEventListener("input", function(e){
-  if(!/^[01]*$/.test(form.xPatternInput.value)){
-    form.xPatternInput.value = previousXPattern;
-  }else{
-    previousXPattern = form.xPatternInput.value;
-
-    if(form.repeatPatternCheckBox.checked){
-      form.yPatternInput.value = form.xPatternInput.value;
-    }
-
-    renderPattern(form.xPatternInput.value, form.yPatternInput.value);
-  }
+form.cols.addEventListener("input", function(e){
+  if(form.cols.value < 1)
+    form.cols.value = 1
+  updateDim(form.cols.value, form.rows.value);
 });
 
-let previousYPattern = "";
-form.yPatternInput.addEventListener("input", function(e){
-  if(!/^[01]*$/.test(form.yPatternInput.value)){
-    form.yPatternInput.value = previousYPattern;
-  }else{
-    previousYPattern = form.yPatternInput.value;
-
-    renderPattern(form.xPatternInput.value, form.yPatternInput.value);
-  }
+form.rows.addEventListener("input", function(e){
+  //if(!/^[01]*$/.test(form.yPatternInput.value)){
+  if(form.rows.value < 1)
+    form.rows.value = 1
+  updateDim(form.cols.value, form.rows.value);
 });
 
-form.repeatPatternCheckBox.addEventListener("change", function(e){
-  form.yPatternInput.disabled = form.repeatPatternCheckBox.checked;
-  if(form.repeatPatternCheckBox.checked){
-    previousYPattern = form.yPatternInput.value;
-    form.yPatternInput.value = form.xPatternInput.value;
-  }else{
-    if(previousYPattern !== ""){
-      form.yPatternInput.value = previousYPattern;
-    }
+function updateDim(cols, rows){
+  resize(pattern[0], cols);
+  resize(pattern[1], rows);
+
+  function resize(arr, newSize) {
+    while(newSize > arr.length)
+        arr.push((arr[arr.length-1]+1)%2);
+    arr.length = newSize;
   }
 
-  renderPattern(form.xPatternInput.value, form.yPatternInput.value);
-});
+  renderPattern(pattern);
+}
 
-const canvas = document.querySelector("canvas");
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
-canvas.style.width  = canvas.width  + "px";
-canvas.style.height = canvas.height + "px";
-const ctx = canvas.getContext("2d");
+function renderPattern(pattern){
+  document.querySelector(".container").innerHTML = "";
+  
+  const dim = 50;
+  const offset = v2(dim, dim);
 
-function renderPattern(formatA, formatB){
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  const cols = pattern[0].length;
+  const rows = pattern[1].length;
 
-  const patternA = formatA.split("").map(n => Number(n));
-  const patternB = formatB.split("").map(n => Number(n));
-
-  const offset = {x:40, y:40};
-
-  ctx.fillStyle = "#eeeeee";
-  ctx.fillRect(offset.x - 10, offset.y - 10, 410, 410);
-
-  const stitches = makePattern(patternA, patternB);
+  const stitches = makePattern(pattern);
   for(const stitch of stitches){
-    const translation = translate(stitch, 400, offset);
-    drawStitch(ctx, translation, stitch.color);
+    const translation = translate(stitch, dim, offset);
+    drawStitch(translation, stitch.color);
   }
   
   for(let y = 0; y < 3; y++){
@@ -69,42 +53,42 @@ function renderPattern(formatA, formatB){
       if(x === 1 && y === 1) continue;
 
       for(const stitch of stitches){
-        const translation = translate(stitch, 400, {
-          x:offset.x-400 + 400*x,
-          y:offset.y-400 + 400*y,
+        const translation = translate(stitch, dim, {
+          x:offset.x-(dim * cols) + (dim * cols)*x,
+          y:offset.y-(dim * rows) + (dim * rows)*y,
         });
-        drawStitch(ctx, translation, "grey");
+        drawStitch(translation, "grey");
       }
     }
   }
 }
 
 function translate(stitch, scale, offset){
-  return {
-    a: {
-      x: stitch.a.x*scale + offset.x,
-      y: stitch.a.y*scale + offset.y,
-    },
-    b: {
-      x: stitch.b.x*scale + offset.x,
-      y: stitch.b.y*scale + offset.y,
-    },
-  }
+  const copy = Object.assign({}, stitch);
+  copy.a = v2(
+    stitch.a.x*scale + offset.x,
+    stitch.a.y*scale + offset.y
+  );
+  copy.b = v2(
+    stitch.b.x*scale + offset.x,
+    stitch.b.y*scale + offset.y
+  );
+  return copy;
 }
 
-function makePattern(patternA, patternB){
+function makePattern(pattern){
   const stitches = [];
 
-  const cols = patternA.length;
-  const colWidth = 1 / cols;
+  const cols = pattern[0].length;
+  const colWidth = 1;
 
-  const rows = patternB.length;
-  const rowHeight = 1 / rows;
+  const rows = pattern[1].length;
+  const rowHeight = 1;
 
   const offsetFactor = 0.1;
 
   for(let y = 0; y < rows; y++){
-    let pairity = patternA[y];
+    let pairity = pattern[1][y];
     for(let x = 0; x < cols; x++){
         let a = {
             x: (x+offsetFactor)*colWidth,
@@ -115,18 +99,19 @@ function makePattern(patternA, patternB){
             y: y*rowHeight,
         };
 
-        if((x+(cols%2)) % 2 === pairity) {
+        if((x+1) % 2 === pairity) {
           stitches.push({
             a: a,
             b: b,
             color: "#E9967A",
+            row: y,
           });
         }
     }
   }
   
   for(let x = 0; x < cols; x++){
-    let pairity = patternB[x];
+    let pairity = pattern[0][x];
     for(let y = 0; y < rows; y++){
         let a = {
             x: x*colWidth,
@@ -142,6 +127,7 @@ function makePattern(patternA, patternB){
             a: a,
             b: b,
             color: "#008B8B",
+            col: x,
           });
         }
     }
@@ -150,18 +136,35 @@ function makePattern(patternA, patternB){
   return stitches;
 }
 
-function drawStitch(ctx, stitch, col){
-  ctx.lineWidth = 2;
-  ctx.strokeStyle = col;
+function drawStitch(stitch, col){
+  const line = document.createElement("div");
 
-  ctx.beginPath();
+  line.classList.add("line");
 
-  ctx.moveTo(stitch.a.x, stitch.a.y);
-  ctx.lineTo(stitch.b.x, stitch.b.y);
+  line.style.borderColor = col;
+  line.style.left = stitch.a.x + "px";
+  line.style.top = stitch.a.y + "px";
+  //line.style.right = stitch.b.x + "px";
+  //line.style.bottom = stitch.b.y + "px";
+  line.style.width = (stitch.b.x - stitch.a.x) + "px";
+  line.style.height = (stitch.b.y - stitch.a.y) + "px";
 
-  ctx.stroke();
+  if(stitch.col !== undefined)
+    line.onclick = (e) => changePattern(0, stitch.col);
+  else
+    line.onclick = (e) => changePattern(1, stitch.row);
+
+  function changePattern(patternIndex, lineIndex){
+    pattern[patternIndex][lineIndex] += 1;
+    pattern[patternIndex][lineIndex] %= 2;
+    renderPattern(pattern);
+  }
+
+  document.querySelector(".container").append(line);
 }
 
 // Default
-form.xPatternInput.value = "1011010110";
-form.xPatternInput.dispatchEvent(new Event('input'));
+form.cols.value = "6";
+form.rows.value = "6";
+form.cols.dispatchEvent(new Event('input'));
+form.rows.dispatchEvent(new Event('input'));

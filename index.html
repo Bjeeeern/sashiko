@@ -10,19 +10,14 @@
     <script type="module" src="main.js"></script>
 </head>
 <body>
-    <canvas></canvas>
+    <div class="container"></div>
     <div class="fake"></div>
     <div id="info">
-        <p>Rader börjar uppifrån och ner, kolumner vänster till höger</p>
         <form>
-            <label for="xPattern">Mönster för liggande stygn</label>
-            <input type="number" name="xPatternInput" id="xPattern">
-            <br>
-            <label for="yPattern">Mönster för stående stygn</label>
-            <input type="number" name="yPatternInput" id="yPattern" disabled="true">
-            <br>
-            <label for="repeatPattern">Stående är liggande mönster roterat 90&deg; moturs</label>
-            <input type="checkbox" name="repeatPatternCheckBox" id="repeatPattern" checked="true">
+            <p>Mönster dimensioner</p>
+            <input type="number" name="cols">
+            x
+            <input type="number" name="rows">
         </form>
     </div>
 </body>
